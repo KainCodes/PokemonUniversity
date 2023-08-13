@@ -6,6 +6,6 @@ If you want to run it (for some unknown reason - you can't leave the incomplete 
 python game.py
 ```
 ***
-Since it is currently an infant you can get the everything but the ability to futily walk around the room here:
+Since it is currently an infant you can get the everything but the ability to futily walk around the room here
 
-![image](https://github.com/KainCodes/PokemonUniversity/assets/126527283/595f688b-09d8-4701-9609-a4ab03a6358b)
+![image](https://github.com/KainCodes/PokemonUniversity/assets/126527283/af88b868-01ef-4b2b-8aa9-67a09b3a0c38)
