@@ -9,76 +9,101 @@ foreground_rect = None
 window_width = 0
 window_height = 0
 
-def set_map(filename):
-    global background_image, foreground_image, background_rect, foreground_rect, map_data, window_width, window_height
-
+class Map():
+    mapBackgrounds = []
+    mapForegrounds = []
     map_data = []
+    background_rect = None
+    foreground_rect = None
+    width = 0
+    height = 0
 
-    with open(f"./maps/{filename}", "r") as file:
-        for line in file:
-            map_data.append(list(line.strip().split(',')))
+    def __init__(self, mapFile, backgrounds, foregrounds):
+        self.mapBackgrounds = []
+        self.mapForegrounds = []
+        self.map_data = []
+
+        with open(f"./resources/maps/{mapFile}", "r") as file:
+            for line in file:
+                self.map_data.append(list(line.strip().split(',')))
+
+        self.width = len(self.map_data[0]) * cell_size  # Adjust cell size as needed
+        self.height = len(self.map_data) * cell_size  # Adjust cell size as needed
+        
+        for filename in backgrounds:
+            image = pygame.transform.scale(
+                pygame.image.load(f"resources/maps/{filename}.png"), 
+                (self.width, self.height)
+            )
+
+            self.mapBackgrounds.append(image)
+
+        for filename in foregrounds:
+            image = pygame.transform.scale(
+                pygame.image.load(f"resources/maps/{filename}.png"), 
+                (self.width, self.height)
+            )
+
+            self.mapForegrounds.append(image)
+
+        self.background_rect = self.mapBackgrounds[0].get_rect()
+        self.background_rect.centerx = centerx
+        self.background_rect.centery = centery
+
+        self.foreground_rect = self.mapForegrounds[0].get_rect()
+        self.foreground_rect.centerx = centerx
+        self.foreground_rect.centery = centery
+
+    def redraw_map(self, new_character_rect, direction, num):
+        global character_rect
+        character_rect = new_character_rect
+        
+        self.draw_background()
+        draw_character(direction, num)
+        self.draw_foreground()
+
+        pygame.display.flip()
+        return 
+
+    def draw_background(self):
+        for image in self.mapBackgrounds:
+            window.blit(image, self.background_rect)
+
+        for row in range(len(self.map_data)):
+            for col in range(len(self.map_data[0])):
+                if self.map_data[row][col] == '#1':
+                    pygame.draw.rect(window, barrier_color, (self.x(col), self.y(row), cell_size, cell_size))
+                elif self.map_data[row][col] == '-':
+                    pygame.draw.rect(window, grass_color, (self.x(col), self.y(row), cell_size, cell_size))
+
+        return
+
+    def draw_foreground(self):
+        for image in self.mapForegrounds:
+            window.blit(image, self.foreground_rect)
+        
+        return
     
-    background = map_data.pop(0)[0]
+    def x(self, col):
+        return col * cell_size + centerx - (self.width / 2)
+    
+    def y(self, row):
+        return row * cell_size + centery - (self.height / 2)
 
-    window_width = len(map_data[0]) * cell_size  # Adjust cell size as needed
-    window_height = len(map_data) * cell_size  # Adjust cell size as needed
-
-    background_image = pygame.transform.scale(pygame.image.load(f"resources/{background}_background.png"), (window_width, window_height))
-    foreground_image = pygame.transform.scale(pygame.image.load(f"resources/{background}_foreground.png"), (window_width, window_height))
-
-    background_rect = background_image.get_rect()
-    background_rect.centerx = window_width // 2
-    background_rect.centery = window_height // 2
-
-    foreground_rect = background_image.get_rect()
-    foreground_rect.centerx = window_width // 2
-    foreground_rect.centery = window_height // 2
-
-set_map("test_map.txt")
-
-window = pygame.display.set_mode((window_width, window_height))
+#window_width = len(map_data[0]) * cell_size  # Adjust cell size as needed
+#window_height = len(map_data) * cell_size  # Adjust cell size as needed
 pygame.display.set_caption("Map Game")
 
-for row in range(len(map_data)):
-    for col in range(len(map_data[0])):
-        if map_data[row][col] == '#':
-            pygame.draw.rect(window, barrier_color, (col * cell_size, row * cell_size, cell_size, cell_size))
-        elif map_data[row][col] == '.':
-            pygame.draw.rect(window, walkable_color, (col * cell_size, row * cell_size, cell_size, cell_size))
+window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+centerx = window.get_rect().centerx
+centery = window.get_rect().centery
 
 character_rect = character_image_s[0].get_rect()
-character_rect.centerx = window_width // 2
-character_rect.centery = window_height // 2
+character_rect.centerx = centerx
+character_rect.centery = centery
 
 def get_character_rect():
     return character_rect.copy()
-
-def redraw_map(new_character_rect, direction, num):
-    global character_rect
-    character_rect = new_character_rect
-    draw_background(map_data)
-    draw_character(direction, num)
-    draw_foreground(map_data)
-
-    pygame.display.flip()
-    return 
-
-def draw_background(map_data):
-    window.blit(background_image, background_rect)
-
-    for row in range(len(map_data)):
-        for col in range(len(map_data[0])):
-            if map_data[row][col] == '#1':
-                pygame.draw.rect(window, barrier_color, (col * cell_size, row * cell_size, cell_size, cell_size))
-            elif map_data[row][col] == '-':
-                pygame.draw.rect(window, grass_color, (col * cell_size, row * cell_size, cell_size, cell_size))
-
-    return
-
-def draw_foreground(map_data):
-    window.blit(foreground_image, foreground_rect)
-    
-    return
 
 def draw_character(direction, num):
     if direction == 'w':

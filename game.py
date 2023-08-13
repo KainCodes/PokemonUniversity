@@ -2,6 +2,7 @@ import pygame
 
 from pygame.locals import *
 from engine.movement import *
+from engine.map import Map
 from resources.constants import *
 
 pygame.init()
